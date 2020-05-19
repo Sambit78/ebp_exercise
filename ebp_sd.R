@@ -147,7 +147,7 @@ datatest = perf.data[-index,]
 
 
 ####
-# 5. Modelling - Ordinal Logistic Regression ----
+# 5. Modeling - Ordinal Logistic Regression ----
 ####
 
 # load car package
@@ -163,7 +163,7 @@ upper.rm <- polr(performance_group ~ .,data=datatrain)
 summary(upper.rm)
 
 ####
-# 5. Step AIC Model ----
+# 6. Step AIC Model ----
 ####
 
 # Step AIC model :
@@ -172,7 +172,7 @@ stepwise.rm <- stepAIC(upper.rm)
 
 
 ####
-# 6. Collinearity ----
+# 7. Collinearity ----
 ####
 library(car)
 sort(vif(lower.rm), decreasing = TRUE)
@@ -181,7 +181,7 @@ sort(vif(stepwise.rm),decreasing = TRUE)
 
 
 ####
-# 7. Feature Importance  ----
+# 8. Feature Importance  ----
 ####
 
 ctable <- coef(summary(stepwise.rm))
@@ -193,7 +193,7 @@ kable(coef_summary[1:(nrow(coef_summary) - 2), ]) %>%
 kable_styling(bootstrap_options = c("hover","striped","condensed"),full_width = F)
 
 ####
-# 8. Model Evaluation  ----
+# 9. Model Evaluation  ----
 ####
 
 #Compute confusion table and misclassification error
