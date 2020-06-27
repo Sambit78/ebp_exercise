@@ -35,7 +35,7 @@ library(DataExplorer)
 # 1. Data Preparation ----
 ####
 
-final.data <- read.csv("data.csv",header = TRUE)
+perf.data <- read.csv("data.csv",header = TRUE)
 glimpse(perf.data)
 
 # Returns variable types of the dataset
@@ -44,14 +44,10 @@ str(final.data)
 # Provides information on missing values in the dataset
 skim(final.data)
 
-# Drop employee id column as it no impact to our modeling
-
-perf.data <- drop_columns(final.data, c("employee_id"))
-
 # Quickly visualize the data by using the plot_str function
 
 perf.data %>%
-  plot_str()
+  plot_str(fontSize=80)
 
 ####
 # 2. Exploratory Data Analysis ----
@@ -70,7 +66,6 @@ plot_intro(perf.data)
 plot_missing(perf.data)
 
 # Return first 5 rows of the dataset
-
 perf.data %>%
   head(5)%>%
   kable() %>%
@@ -86,12 +81,16 @@ perf.data %>%
   kable() %>%
   kable_styling(bootstrap_options = c("hover","striped","condensed"),full_width = F)
 
+# Drop employee id column as it no impact to our modeling
+
+perf.data <- drop_columns(final.data, c("employee_id"))
+
 # This plot visualisizes frequency distributions for all the discrete features
 plot_bar(perf.data)
 
 # A bivirate frequency distribution will show the distribution of discrete features by Performance group
 
-plot_bar(perf.data,with = "test_score")
+plot_bar(perf.data,with = "customers")
 
 # This plot visualises frequency distribution of all continous variables
 # Customers , group size , yrs employed do not have a uniform distribution. Transfers data is mostly 0. Lets convert it to factor
@@ -131,7 +130,6 @@ plot_correlation(na.omit(perf.data), maxcat = 5L)
 plot_correlation(na.omit(perf.data), type = "c")
 plot_correlation(na.omit(perf.data), type = "d")
 
-
 ####
 # 4. Define Training and Test Dataset ----
 ####
@@ -159,8 +157,12 @@ lower.rm <- polr(performance_group ~ 1,data=datatrain)
 summary(lower.rm)
 
 # Define upper model;
-upper.rm <- polr(performance_group ~ .,data=datatrain)
+upper.rm <- polr(performance_group ~ yrs_employed + manager_hire + test_score
+                       + group_size + concern_flag + mobile_flag + customers 
+                       + high_hours_flag + transfers + city,data=datatrain)
 summary(upper.rm)
+
+exp(upper.rm$coefficients)
 
 ####
 # 6. Step AIC Model ----
@@ -201,5 +203,17 @@ kable_styling(bootstrap_options = c("hover","striped","condensed"),full_width = 
 predictperformance = predict(stepwise.rm,datatest[,-1])
 table(datatest$performance_group, predictperformance)
 mean(as.character(datatest$performance_group) != as.character(predictperformance))
+
+
+####
+# 10. Plot  ----
+####
+
+#Plotting the effects 
+library("effects")
+Effect(focal.predictors = "yrs_employed",stepwise.rm)
+plot(Effect(focal.predictors = "manager_hire",stepwise.rm))
+plot(Effect(focal.predictors = c("group_size", "manager_hire"),stepwise.rm))
+
 
 
